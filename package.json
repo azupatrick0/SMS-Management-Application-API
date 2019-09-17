@@ -1,0 +1,54 @@
+{
+  "name": "sms-management-application-api",
+  "version": "1.0.0",
+  "description": "An API for managing SMS",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build && node dist/src",
+    "start:dev": "nodemon index.js",
+    "build": "npm run clean && babel ./src -d dist/src",
+    "clean": "rimraf ./dist/src",
+    "lint": "eslint ./ --fix --ignore-path .gitignore",
+    "pretest": "npm run lint",
+    "test": "cross-env NODE_ENV=test nyc mocha --exit  ./src/tests/index.js --require babel/register --timeout 250000",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azupatrick0/SMS-Management-Application-API.git"
+  },
+  "keywords": [
+    "sms",
+    "api",
+    "application",
+    "messaging"
+  ],
+  "author": "Patrick Azu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/azupatrick0/SMS-Management-Application-API/issues"
+  },
+  "homepage": "https://github.com/azupatrick0/SMS-Management-Application-API#readme",
+  "dependencies": {
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
+    "@babel/register": "^7.6.0",
+    "@babel/runtime": "^7.6.0",
+    "body-parser": "^1.19.0",
+    "coveralls": "^3.0.6",
+    "cross-env": "^5.2.1",
+    "express": "^4.17.1",
+    "logger": "0.0.1",
+    "mocha": "^6.2.0",
+    "nodemon": "^1.19.2",
+    "nyc": "^14.1.1",
+    "rimraf": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  }
+}
