@@ -1,6 +1,13 @@
+/* eslint-disable no-underscore-dangle */
 import express from 'express';
 import bodyParser from 'body-parser';
+import graphqlHttp from 'express-graphql';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 import logger from './config/logger';
+import schema from './schema';
+
+dotenv.config();
 
 const app = express();
 
@@ -9,12 +16,18 @@ const port = process.env.PORT || 3004;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => logger.info('Connected to db')).catch((err) => logger.info(err));
 
-app.get('/', (req, res) => {
+app.use('/graphql', graphqlHttp({
+  schema,
+  graphiql: true,
+}));
+
+app.get('/', (_req, res) => {
   res.status(200).json({
     status: 200,
     data: {
-      message: 'Welcome to sms management API, the best sms API on the net',
+      message: 'Welcome to SMS Management App',
     },
   });
 });
