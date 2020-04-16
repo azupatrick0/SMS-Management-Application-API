@@ -3,37 +3,39 @@ import {
   GraphQLObjectType, GraphQLList, GraphQLString,
 } from 'graphql';
 import SMS from '../models/sms';
-import { SmsType, ContactType } from '../types';
+import { SmsType, UserBioType, UserType } from '../types';
 import CONTACT from '../models/contact';
 
 const RootQuery = new GraphQLObjectType({
   name: 'RootQuery',
   fields: {
     getAllSms: {
-      type: new GraphQLList(SmsType),
+      type: new GraphQLList(UserType),
       resolve(parent, args) {
         return SMS.find();
       },
     },
-    getAllSmsSentByAUser: {
-      type: new GraphQLList(SmsType),
-      args: { sender: { type: GraphQLString } },
-      resolve(parent, args) {
-        return SMS.find({ sender: args.sender });
-      },
-    },
-    getAllSmsReceivedByAUser: {
-      type: new GraphQLList(SmsType),
-      args: { receiver: { type: GraphQLString } },
-      resolve(parent, args) {
-        return SMS.find({ receiver: args.receiver });
-      },
-    },
     getUser: {
-      type: new GraphQLList(ContactType),
+      type: UserType,
       args: { phone: { type: GraphQLString } },
+      async resolve(parent, args) {
+        try {
+          const user = await CONTACT.findOne({ phone: args.phone });
+          return user;
+        } catch (error) {
+          return ({
+            status: 'error',
+            data: {
+              error,
+            },
+          });
+        }
+      },
+    },
+    getUsers: {
+      type: new GraphQLList(UserType),
       resolve(parent, args) {
-        return CONTACT.find({ phone: args.phone });
+        return CONTACT.find();
       },
     },
   },
