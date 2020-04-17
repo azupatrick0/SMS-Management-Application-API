@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
 import {
-  GraphQLObjectType, GraphQLString, GraphQLID,
+  GraphQLObjectType, GraphQLString, GraphQLID, GraphQLList,
 } from 'graphql';
 import CONTACT from '../models/contact';
 import SMS from '../models/sms';
@@ -19,22 +19,42 @@ const SmsType = new GraphQLObjectType({
       type: GraphQLString,
     },
     sender: {
-      type: GraphQLString,
+      type: UserBioType,
+      async resolve(parent, args) {
+        try {
+          const contact = await CONTACT.findOne({ phone: parent.sender });
+          return contact;
+        } catch (error) {
+          return ({
+            status: 'error',
+            data: {
+              error,
+            },
+          });
+        }
+      },
     },
     receiver: {
-      type: GraphQLString,
-    },
-    smsReceiver: {
-      type: ContactType,
-      resolve(parent, args) {
-        return CONTACT.find({ phone: parent.receiver });
+      type: UserBioType,
+      async resolve(parent, args) {
+        try {
+          const contact = await CONTACT.findOne({ phone: parent.receiver });
+          return contact;
+        } catch (error) {
+          return ({
+            status: 'error',
+            data: {
+              error,
+            },
+          });
+        }
       },
     },
   }),
 });
 
-const ContactType = new GraphQLObjectType({
-  name: 'ContactType',
+const UserType = new GraphQLObjectType({
+  name: 'UserType',
   fields: () => ({
     id: {
       type: GraphQLID,
@@ -46,10 +66,40 @@ const ContactType = new GraphQLObjectType({
       type: GraphQLString,
     },
     messages: {
-      type: SmsType,
-      resolve(parent, args) {
-        return SMS.find({ sender: parent.phone });
+      type: new GraphQLList(SmsType),
+      async resolve(parent, args) {
+        try {
+          const sentMessages = await SMS.find({ sender: parent.phone });
+          const receivedMessages = await SMS.find({ receiver: parent.phone });
+          return [
+            ...sentMessages,
+            ...receivedMessages,
+          ];
+        } catch (error) {
+          return ({
+            status: 'error',
+            data: {
+              error,
+            },
+          });
+        }
       },
+    },
+  }),
+});
+
+
+const UserBioType = new GraphQLObjectType({
+  name: 'UserBioType',
+  fields: () => ({
+    id: {
+      type: GraphQLID,
+    },
+    name: {
+      type: GraphQLString,
+    },
+    phone: {
+      type: GraphQLString,
     },
   }),
 });
@@ -61,13 +111,15 @@ const DeleteSmsType = new GraphQLObjectType({
       type: GraphQLID,
     },
     sender: {
-      type: GraphQLString,
+      type: UserBioType,
     },
     receiver: {
-      type: GraphQLString,
+      type: UserBioType,
     },
   }),
 });
 
 
-export { SmsType, ContactType, DeleteSmsType };
+export {
+  SmsType, UserType, UserBioType, DeleteSmsType,
+};
